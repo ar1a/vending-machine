@@ -1,33 +1,24 @@
-/**
- * Some predefined delays (in milliseconds).
- */
-export enum Delays {
-  Short = 500,
-  Medium = 2000,
-  Long = 5000,
-}
+import { Task, chain } from 'fp-ts/lib/Task';
+import { pipe } from 'fp-ts/lib/pipeable';
+import { createInterface } from 'readline';
 
-/**
- * Returns a Promise<string> that resolves after given time.
- *
- * @param {string} name - A name.
- * @param {number=} [delay=Delays.Medium] - Number of milliseconds to delay resolution of the Promise.
- * @returns {Promise<string>}
- */
-function delayedHello(
-  name: string,
-  delay: number = Delays.Medium,
-): Promise<string> {
-  return new Promise((resolve: (value?: string) => void) =>
-    setTimeout(() => resolve(`Hello, ${name}`), delay),
-  );
-}
+export const log = (...args: any[]): Task<void> => () =>
+  new Promise(resolve => resolve(console.log(...args)));
 
-// Below are examples of using TSLint errors suppression
-// Here it is suppressing missing type definitions for greeter function
+export const getLine = (question: string): Task<string> => () =>
+  new Promise(resolve => {
+    const rl = createInterface({
+      input: process.stdin,
+      output: process.stdout,
+    });
 
-// tslint:disable-next-line typedef
-export async function greeter(name) {
-  // tslint:disable-next-line no-unsafe-any no-return-await
-  return await delayedHello(name, Delays.Long);
-}
+    rl.question(question, answer => {
+      rl.close();
+      resolve(answer);
+    });
+  });
+
+pipe(
+  getLine('Press enter to continue'),
+  chain(() => log('hello world')),
+)();
