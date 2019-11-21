@@ -58,7 +58,7 @@ const choices: Choice[] = [
 ];
 
 export const getValidChoices = (money: number, choices: Choice[]): Choice[] =>
-  filter((choice: Choice) => choice.price < money)(choices);
+  filter((choice: Choice) => choice.price <= money)(choices);
 
 const sum = monoidFold(monoidSum);
 
