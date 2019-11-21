@@ -7,11 +7,11 @@ import {
   right,
   fold,
 } from 'fp-ts/lib/TaskEither';
-import { Task, task, chain as tChain } from 'fp-ts/lib/Task';
+import { Task, chain as tChain } from 'fp-ts/lib/Task';
 import * as E from 'fp-ts/lib/Either';
 import { pipe } from 'fp-ts/lib/pipeable';
 import { fold as monoidFold, monoidSum } from 'fp-ts/lib/Monoid';
-import { filter } from 'fp-ts/lib/Array';
+import { filter, cons } from 'fp-ts/lib/Array';
 import { createInterface } from 'readline';
 
 export const log = (...args: any[]): Task<void> => () =>
@@ -62,11 +62,21 @@ export const getValidChoices = (money: number, choices: Choice[]): Choice[] =>
 
 const sum = monoidFold(monoidSum);
 
-const getMoney = (coins: number[]): Task<number> =>
+const getMoney = (coins: number[]): TaskEither<string, number> =>
   pipe(
-    getLine(),
-    tChain(a =>
-      a === '' ? task.of(sum(coins)) : getMoney([...coins, getCoin(a)]),
+    rightTask(getLine()),
+    chain(a =>
+      a === ''
+        ? right(sum(coins))
+        : pipe(
+            E.map<number, number[]>(coin => cons<number>(coin, coins))(
+              getCoin(a),
+            ),
+            E.fold<string, number[], TaskEither<string, number>>(
+              e => left(e),
+              c => getMoney(c),
+            ),
+          ),
     ),
   );
 
@@ -91,8 +101,8 @@ const getChoice = (choices: Choice[]): TaskEither<string, Choice> =>
 pipe(
   log('Please enter coins, valid coins are 10c, 20c, 50c, $1, $2\n'),
   tChain(() => log('Insert coins (press enter to finish): ')),
-  tChain(() => getMoney([])),
   rightTask,
+  chain(() => getMoney([])),
   chain(money =>
     pipe(
       right(getValidChoices(money, choices)),
