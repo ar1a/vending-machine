@@ -8,7 +8,7 @@ import {
   fold,
 } from 'fp-ts/lib/TaskEither';
 import { Task, task, chain as tChain } from 'fp-ts/lib/Task';
-// import { right as eRight } from 'fp-ts/lib/Either';
+import * as E from 'fp-ts/lib/Either';
 import { pipe } from 'fp-ts/lib/pipeable';
 import { fold as monoidFold, monoidSum } from 'fp-ts/lib/Monoid';
 import { filter } from 'fp-ts/lib/Array';
@@ -30,20 +30,20 @@ export const getLine = (question: string = ''): Task<string> => () =>
     });
   });
 
-const getCoin = (input: string): number => {
+const getCoin = (input: string): E.Either<string, number> => {
   switch (input) {
     case '10c':
-      return 10;
+      return E.right(10);
     case '20c':
-      return 20;
+      return E.right(20);
     case '50c':
-      return 50;
+      return E.right(50);
     case '$1':
-      return 100;
+      return E.right(100);
     case '$2':
-      return 200;
+      return E.right(200);
   }
-  return 0; // TODO: Throw an error instead of 0
+  return E.left('Invalid coin');
 };
 
 interface Choice {
