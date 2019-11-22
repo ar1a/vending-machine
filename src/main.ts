@@ -64,7 +64,8 @@ const sum = monoidFold(monoidSum);
 
 const getMoney = (coins: number[]): TaskEither<string, number> =>
   pipe(
-    rightTask(getLine()),
+    getLine(),
+    rightTask,
     chain(a =>
       a === ''
         ? right(sum(coins))
@@ -85,7 +86,8 @@ const choiceDialog = (choices: Choice[]): string[] =>
 
 const getChoice = (choices: Choice[]): TaskEither<string, Choice> =>
   pipe(
-    rightTask(log(choiceDialog(choices).join('\n'))),
+    log(choiceDialog(choices).join('\n')),
+    rightTask,
     chain(() => rightTask(getLine('Please enter number: \n'))),
     chain(input =>
       +input < choices.length && +input >= 0
