@@ -69,13 +69,9 @@ const getMoney = (coins: number[]): TaskEither<string, number> =>
       a === ''
         ? right(sum(coins))
         : pipe(
-            E.map<number, number[]>(coin => cons<number>(coin, coins))(
-              getCoin(a),
-            ),
-            E.fold<string, number[], TaskEither<string, number>>(
-              e => left(e),
-              c => getMoney(c),
-            ),
+            getCoin(a),
+            E.map(coin => cons(coin, coins)),
+            E.fold(left, getMoney),
           ),
     ),
   );
